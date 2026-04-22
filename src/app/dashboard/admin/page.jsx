@@ -20,6 +20,13 @@ export default function AdminDashboard() {
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // Pagination states
+  const [leavesPage, setLeavesPage] = useState(1);
+  const [employeesPage, setEmployeesPage] = useState(1);
+  const [attendancePage, setAttendancePage] = useState(1);
+  const itemsPerPage = 5;
 
   // Salary calculation constants (adjust as per company policy)
   const DAILY_SALARY = 1000; // Example: ₹1000 per day
@@ -233,6 +240,7 @@ export default function AdminDashboard() {
     toast.success('Report exported successfully!');
   };
 
+  // Filtered data
   const filteredLeaves = leaves.filter(leave => {
     const employeeName = getDisplayName(leave.userId).toLowerCase();
     const matchesSearch = employeeName.includes(searchTerm.toLowerCase());
@@ -244,6 +252,30 @@ export default function AdminDashboard() {
     getDisplayName(emp).toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredAttendance = attendance.slice(0, 50);
+
+  // Pagination calculations
+  const leavesTotalPages = Math.ceil(filteredLeaves.length / itemsPerPage);
+  const employeesTotalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const attendanceTotalPages = Math.ceil(filteredAttendance.length / itemsPerPage);
+
+  const paginatedLeaves = filteredLeaves.slice((leavesPage - 1) * itemsPerPage, leavesPage * itemsPerPage);
+  const paginatedEmployees = filteredEmployees.slice((employeesPage - 1) * itemsPerPage, employeesPage * itemsPerPage);
+  const paginatedAttendance = filteredAttendance.slice((attendancePage - 1) * itemsPerPage, attendancePage * itemsPerPage);
+
+  // Reset page when search/filter changes
+  useEffect(() => {
+    setLeavesPage(1);
+  }, [searchTerm, filterStatus]);
+
+  useEffect(() => {
+    setEmployeesPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setAttendancePage(1);
+  }, []);
 
   const stats = {
     totalEmployees: employees.length,
@@ -257,6 +289,60 @@ export default function AdminDashboard() {
     totalAttendance: attendance.length
   };
 
+  // Pagination Component
+  const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+    if (totalPages <= 1) return null;
+    
+    return (
+      <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+        >
+          Previous
+        </button>
+        <div className="flex gap-1">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum;
+            if (totalPages <= 5) {
+              pageNum = i + 1;
+            } else if (currentPage <= 3) {
+              pageNum = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i;
+            } else {
+              pageNum = currentPage - 2 + i;
+            }
+            
+            if (pageNum > totalPages || pageNum < 1) return null;
+            
+            return (
+              <button
+                key={pageNum}
+                onClick={() => onPageChange(pageNum)}
+                className={`w-8 h-8 rounded-lg text-sm transition-colors ${
+                  currentPage === pageNum
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
@@ -267,6 +353,25 @@ export default function AdminDashboard() {
       </div>
     );
   }
+
+  // Tab options for mobile dropdown
+  const tabOptions = [
+    { id: 'leaves', label: 'Leave Requests', icon: (
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ), badge: stats.pendingLeaves > 0 ? stats.pendingLeaves : null },
+    { id: 'employees', label: 'Employees', icon: (
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ), badge: null },
+    { id: 'attendance', label: 'Attendance Records', icon: (
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+    ), badge: null },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
@@ -446,58 +551,78 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Desktop: normal tabs, Mobile: dropdown */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="border-b border-gray-200 overflow-x-auto">
+          {/* Desktop Tabs */}
+          <div className="hidden sm:block border-b border-gray-200 overflow-x-auto">
             <nav className="flex flex-nowrap min-w-max -mb-px">
-              <button
-                onClick={() => setSelectedTab('leaves')}
-                className={`py-4 px-4 sm:px-6 font-medium text-sm transition-all duration-200 whitespace-nowrap ${selectedTab === 'leaves'
-                  ? 'border-b-2 border-blue-500 text-blue-700 bg-blue-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              {tabOptions.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedTab(tab.id)}
+                  className={`py-4 px-6 font-medium text-sm transition-all duration-200 whitespace-nowrap ${selectedTab === tab.id
+                    ? 'border-b-2 border-blue-500 text-blue-700 bg-blue-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300'
                   }`}
+                >
+                  <span className="flex items-center space-x-2">
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                    {tab.badge !== null && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {tab.badge}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Mobile Dropdown Tabs */}
+          <div className="sm:hidden border-b border-gray-200 p-3 bg-gray-50">
+            <div className="relative">
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="w-full flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-700"
               >
-                <span className="flex items-center space-x-2">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span>Leave Requests</span>
-                  {stats.pendingLeaves > 0 && (
+                <div className="flex items-center gap-2">
+                  {tabOptions.find(t => t.id === selectedTab)?.icon}
+                  <span>{tabOptions.find(t => t.id === selectedTab)?.label}</span>
+                  {selectedTab === 'leaves' && stats.pendingLeaves > 0 && (
                     <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
                       {stats.pendingLeaves}
                     </span>
                   )}
-                </span>
+                </div>
+                <svg className={`h-5 w-5 transition-transform ${showMobileMenu ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-              <button
-                onClick={() => setSelectedTab('employees')}
-                className={`py-4 px-4 sm:px-6 font-medium text-sm transition-all duration-200 whitespace-nowrap ${selectedTab === 'employees'
-                  ? 'border-b-2 border-blue-500 text-blue-700 bg-blue-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:border-gray-300'
-                  }`}
-              >
-                <span className="flex items-center space-x-2">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  <span>Employees</span>
-                </span>
-              </button>
-              <button
-                onClick={() => setSelectedTab('attendance')}
-                className={`py-4 px-4 sm:px-6 font-medium text-sm transition-all duration-200 whitespace-nowrap ${selectedTab === 'attendance'
-                  ? 'border-b-2 border-blue-500 text-blue-700 bg-blue-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:border-gray-300'
-                  }`}
-              >
-                <span className="flex items-center space-x-2">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  <span>Attendance Records</span>
-                </span>
-              </button>
-            </nav>
+              {showMobileMenu && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                  {tabOptions.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setSelectedTab(tab.id);
+                        setShowMobileMenu(false);
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors ${selectedTab === tab.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                      } ${tab.id === 'leaves' ? 'rounded-t-lg' : ''} ${tab.id === 'attendance' ? 'rounded-b-lg' : ''}`}
+                    >
+                      {tab.icon}
+                      <span>{tab.label}</span>
+                      {tab.badge !== null && (
+                        <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-auto">
+                          {tab.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Search Bar */}
@@ -518,7 +643,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Leave Requests Tab - Mobile Responsive Cards */}
+          {/* Leave Requests Tab */}
           {selectedTab === 'leaves' && (
             <div className="p-4 sm:p-6">
               <div className="flex flex-wrap gap-2 mb-4">
@@ -543,10 +668,10 @@ export default function AdminDashboard() {
 
               {/* Mobile Card View for Leaves */}
               <div className="block lg:hidden space-y-4">
-                {filteredLeaves.length === 0 ? (
+                {paginatedLeaves.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">No leave requests found</div>
                 ) : (
-                  filteredLeaves.map((leave) => (
+                  paginatedLeaves.map((leave) => (
                     <div key={leave._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2">
@@ -568,7 +693,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-500">Duration:</span>
-                          <span className="text-gray-900">{new Date(leave.startDate).toLocaleDateString()} → {new Date(leave.endDate).toLocaleDateString()}</span>
+                          <span className="text-gray-900 text-xs break-all">{new Date(leave.startDate).toLocaleDateString()} → {new Date(leave.endDate).toLocaleDateString()}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-500">Days:</span>
@@ -620,14 +745,14 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredLeaves.length === 0 ? (
+                    {paginatedLeaves.length === 0 ? (
                       <tr>
                         <td colSpan="7" className="px-6 py-12 text-center text-gray-700 font-medium">
                           No leave requests found
                         </td>
                       </tr>
                     ) : (
-                      filteredLeaves.map((leave) => (
+                      paginatedLeaves.map((leave) => (
                         <tr key={leave._id} className="hover:bg-blue-50/40 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center space-x-2">
@@ -682,18 +807,25 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination for Leaves */}
+              <Pagination 
+                currentPage={leavesPage} 
+                totalPages={leavesTotalPages} 
+                onPageChange={setLeavesPage} 
+              />
             </div>
           )}
 
-          {/* Employees Tab - Mobile Responsive Cards */}
+          {/* Employees Tab */}
           {selectedTab === 'employees' && (
             <div className="p-4 sm:p-6">
               {/* Mobile Card View for Employees */}
               <div className="block lg:hidden space-y-4">
-                {filteredEmployees.length === 0 ? (
+                {paginatedEmployees.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">No employees found</div>
                 ) : (
-                  filteredEmployees.map((employee) => (
+                  paginatedEmployees.map((employee) => (
                     <div key={employee._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold">
@@ -747,14 +879,14 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredEmployees.length === 0 ? (
+                    {paginatedEmployees.length === 0 ? (
                       <tr>
                         <td colSpan="5" className="px-6 py-12 text-center text-gray-700 font-medium">
                           No employees found
                         </td>
                       </tr>
                     ) : (
-                      filteredEmployees.map((employee) => (
+                      paginatedEmployees.map((employee) => (
                         <tr key={employee._id} className="hover:bg-blue-50/40 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center space-x-3">
@@ -792,18 +924,25 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination for Employees */}
+              <Pagination 
+                currentPage={employeesPage} 
+                totalPages={employeesTotalPages} 
+                onPageChange={setEmployeesPage} 
+              />
             </div>
           )}
 
-          {/* Attendance Tab - Mobile Responsive Cards */}
+          {/* Attendance Tab */}
           {selectedTab === 'attendance' && (
             <div className="p-4 sm:p-6">
               {/* Mobile Card View for Attendance */}
               <div className="block lg:hidden space-y-4">
-                {attendance.length === 0 ? (
+                {paginatedAttendance.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">No attendance records found</div>
                 ) : (
-                  attendance.slice(0, 50).map((record) => (
+                  paginatedAttendance.map((record) => (
                     <div key={record._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2">
@@ -850,14 +989,14 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {attendance.length === 0 ? (
+                    {paginatedAttendance.length === 0 ? (
                       <tr>
                         <td colSpan="4" className="px-6 py-12 text-center text-gray-700 font-medium">
                           No attendance records found
                         </td>
                       </tr>
                     ) : (
-                      attendance.slice(0, 50).map((record) => (
+                      paginatedAttendance.map((record) => (
                         <tr key={record._id} className="hover:bg-blue-50/40 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center space-x-2">
@@ -887,6 +1026,13 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination for Attendance */}
+              <Pagination 
+                currentPage={attendancePage} 
+                totalPages={attendanceTotalPages} 
+                onPageChange={setAttendancePage} 
+              />
             </div>
           )}
         </div>
