@@ -19,6 +19,14 @@ export default function EmployeeDashboard() {
   const [showLeaveForm, setShowLeaveForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState('');
+  const [selectedTab, setSelectedTab] = useState('leaves'); // For mobile tabs
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  
+  // Pagination for mobile views
+  const [leavesPage, setLeavesPage] = useState(1);
+  const [attendancePage, setAttendancePage] = useState(1);
+  const itemsPerPage = 5;
+  
   const displayName = user?.fullName || user?.name || 'Employee';
 
   useEffect(() => {
@@ -80,7 +88,80 @@ export default function EmployeeDashboard() {
     ? ((currentMonthPresent / currentMonthAttendance.length) * 100).toFixed(1)
     : 0;
 
+  // Pagination calculations
+  const leavesTotalPages = Math.ceil(leaves.length / itemsPerPage);
+  const attendanceTotalPages = Math.ceil(attendance.length / itemsPerPage);
+  const paginatedLeaves = leaves.slice((leavesPage - 1) * itemsPerPage, leavesPage * itemsPerPage);
+  const paginatedAttendance = attendance.slice((attendancePage - 1) * itemsPerPage, attendancePage * itemsPerPage);
+
+  // Get status badge class
+  const getStatusBadgeClass = (status) => {
+    if (status === 'Approved') return 'bg-green-100 text-green-800';
+    if (status === 'Rejected') return 'bg-red-100 text-red-800';
+    return 'bg-yellow-100 text-yellow-800';
+  };
+
+  // Pagination Component
+  const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+    if (totalPages <= 1) return null;
+    
+    return (
+      <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+        >
+          Previous
+        </button>
+        <div className="flex gap-1">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum;
+            if (totalPages <= 5) {
+              pageNum = i + 1;
+            } else if (currentPage <= 3) {
+              pageNum = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i;
+            } else {
+              pageNum = currentPage - 2 + i;
+            }
+            
+            if (pageNum > totalPages || pageNum < 1) return null;
+            
+            return (
+              <button
+                key={pageNum}
+                onClick={() => onPageChange(pageNum)}
+                className={`w-8 h-8 rounded-lg text-sm transition-colors ${
+                  currentPage === pageNum
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
+
   if (loading) return <LoadingSpinner />;
+
+  // Tab options for mobile
+  const tabOptions = [
+    { id: 'leaves', label: 'Leave History' },
+    { id: 'attendance', label: 'Attendance History' },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
@@ -90,7 +171,7 @@ export default function EmployeeDashboard() {
         
         {/* Welcome Section */}
         <div className="mb-8">
-          <div className="rounded-2xl shadow-lg border border-blue-100 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-6">
+          <div className="rounded-2xl shadow-lg border border-blue-100 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-6">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
               <div>
                 <p className="text-sm font-semibold text-blue-700">{greeting}</p>
@@ -221,51 +302,162 @@ export default function EmployeeDashboard() {
             }}
             className="bg-white text-gray-700 px-6 py-3 rounded-xl font-semibold border-2 border-gray-300 hover:border-blue-500 hover:shadow-md transition-all duration-300"
           >
-            📋 View Attendance History
+            📋 Mark Attendance
           </button>
         </div>
 
         {/* Attendance Marking Section */}
         <div id="attendance-section" className="mb-8 scroll-mt-20">
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 sm:px-6 py-4 border-b">
               <h2 className="text-lg font-semibold text-gray-800 flex items-center">
                 <span className="w-1 h-6 bg-green-500 rounded-full mr-3"></span>
                 Today's Attendance
               </h2>
             </div>
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <AttendanceMark onSuccess={fetchData} />
             </div>
           </div>
         </div>
 
-        {/* Leave History Section */}
-        <div className="mb-8">
+        {/* Mobile Tabs for History Sections */}
+        <div className="block lg:hidden mb-6">
+          <div className="relative">
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm text-gray-700"
+            >
+              <span className="font-medium">
+                {selectedTab === 'leaves' ? '📋 Leave History' : '📅 Attendance History'}
+              </span>
+              <svg className={`h-5 w-5 transition-transform ${showMobileMenu ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {showMobileMenu && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20">
+                <button
+                  onClick={() => {
+                    setSelectedTab('leaves');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-4 py-3 text-left rounded-t-xl ${selectedTab === 'leaves' ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
+                >
+                  <span>📋 Leave History</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedTab('attendance');
+                    setShowMobileMenu(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-4 py-3 text-left rounded-b-xl ${selectedTab === 'attendance' ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
+                >
+                  <span>📅 Attendance History</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Leave History Section - Mobile Cards + Desktop Table */}
+        <div className={`mb-8 ${selectedTab === 'leaves' ? 'block' : 'hidden lg:block'}`}>
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 sm:px-6 py-4 border-b">
               <h2 className="text-lg font-semibold text-gray-800 flex items-center">
                 <span className="w-1 h-6 bg-blue-500 rounded-full mr-3"></span>
                 Leave History
               </h2>
             </div>
-            <div className="p-6">
-              <LeaveHistory leaves={leaves} onCancel={fetchData} />
+            <div className="p-4 sm:p-6">
+              {/* Mobile Card View for Leaves */}
+              <div className="block lg:hidden space-y-4">
+                {paginatedLeaves.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl">No leave requests found</div>
+                ) : (
+                  paginatedLeaves.map((leave) => (
+                    <div key={leave._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="text-sm font-medium text-gray-500">Type</span>
+                        <span className="text-sm font-semibold text-gray-900">{leave.leaveType || leave.type}</span>
+                      </div>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-medium text-gray-500">Duration</span>
+                        <span className="text-xs text-gray-700">
+                          {new Date(leave.startDate).toLocaleDateString()} → {new Date(leave.endDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-medium text-gray-500">Days</span>
+                        <span className="font-semibold text-gray-900">{leave.totalDays}</span>
+                      </div>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-medium text-gray-500">Status</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(leave.status)}`}>
+                          {leave.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Reason</span>
+                        <span className="text-xs text-gray-600 max-w-[200px] text-right">{leave.reason || '-'}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <Pagination currentPage={leavesPage} totalPages={leavesTotalPages} onPageChange={setLeavesPage} />
+              </div>
+              
+              {/* Desktop Table View */}
+              <div className="hidden lg:block">
+                <LeaveHistory leaves={leaves} onCancel={fetchData} />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Attendance History Section */}
-        <div>
+        {/* Attendance History Section - Mobile Cards + Desktop Table */}
+        <div className={`${selectedTab === 'attendance' ? 'block' : 'hidden lg:block'}`}>
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 sm:px-6 py-4 border-b">
               <h2 className="text-lg font-semibold text-gray-800 flex items-center">
                 <span className="w-1 h-6 bg-purple-500 rounded-full mr-3"></span>
                 Attendance History
               </h2>
             </div>
-            <div className="p-6">
-              <AttendanceHistory attendance={attendance} />
+            <div className="p-4 sm:p-6">
+              {/* Mobile Card View for Attendance */}
+              <div className="block lg:hidden space-y-4">
+                {paginatedAttendance.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl">No attendance records found</div>
+                ) : (
+                  paginatedAttendance.map((record) => (
+                    <div key={record._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="text-sm font-medium text-gray-500">Date</span>
+                        <span className="text-sm font-semibold text-gray-900">{new Date(record.date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-medium text-gray-500">Status</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${record.status === 'Present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {record.status === 'Present' ? '✅ Present' : '❌ Absent'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Marked At</span>
+                        <span className="text-xs text-gray-600">
+                          {new Date(record.markedAt || record.createdAt || record.date).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <Pagination currentPage={attendancePage} totalPages={attendanceTotalPages} onPageChange={setAttendancePage} />
+              </div>
+              
+              {/* Desktop Table View */}
+              <div className="hidden lg:block">
+                <AttendanceHistory attendance={attendance} />
+              </div>
             </div>
           </div>
         </div>
