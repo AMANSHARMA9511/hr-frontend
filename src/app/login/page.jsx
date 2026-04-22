@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '@/services/apiClient';
-import { Eye, EyeOff, Mail, Lock, User, CheckCircle, Briefcase, Users, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, CheckCircle, ArrowRight } from 'lucide-react';
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -94,7 +94,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex bg-white">
+    <div className="min-h-screen flex bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* LEFT PANEL - Brand Section with Gradient */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-700 via-indigo-800 to-purple-800 text-white relative overflow-hidden">
         {/* Decorative background elements */}
@@ -116,14 +116,33 @@ export default function Login() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
-            <span className="text-4xl text-24 font-semibold">HR Management System</span>
+            <span className="text-2xl font-semibold">HR Management System</span>
           </div>
 
+          <div className="space-y-6">
+            <h1 className="text-4xl font-bold leading-tight">
+              Welcome to <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-300">
+                HR Management
+              </span>
+            </h1>
+            <p className="text-lg text-blue-100">
+              Streamline your workforce management with our comprehensive HR solution.
+            </p>
+            <div className="flex items-center gap-4 pt-4">
+              <div className="flex -space-x-2">
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">👥</div>
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">⭐</div>
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">🏆</div>
+              </div>
+              <span className="text-sm text-blue-100">Trusted by 1000+ companies</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* RIGHT PANEL - Login/Signup Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-4 bg-gray-50">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-8">
         <div className="w-full max-w-md">
           {/* Logo for mobile */}
           <div className="text-center mb-8 lg:hidden">
@@ -136,7 +155,7 @@ export default function Login() {
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm">
             {/* Desktop header */}
             <div className="hidden lg:block text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800">
@@ -160,7 +179,7 @@ export default function Login() {
                       type="email"
                       placeholder="Enter your email"
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50/50 text-gray-900"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white text-gray-900"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
@@ -177,7 +196,7 @@ export default function Login() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter password"
                       required
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50/50 text-gray-900"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white text-gray-900"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     />
@@ -232,7 +251,7 @@ export default function Login() {
                       type="text"
                       placeholder="Full Name"
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50/50 text-gray-900"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
                       value={signUpData.name}
                       onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
                     />
@@ -249,7 +268,7 @@ export default function Login() {
                       type="email"
                       placeholder="Email"
                       required
-                      className="w-full pl-10 pr-4 py-3 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50/50"
+                      className="w-full pl-10 pr-4 py-3 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                       value={signUpData.email}
                       onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                     />
@@ -266,7 +285,7 @@ export default function Login() {
                       type="password"
                       placeholder="Password (min. 6 characters)"
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50/50 text-gray-900"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
                       value={signUpData.password}
                       onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                     />
@@ -283,7 +302,7 @@ export default function Login() {
                       type="password"
                       placeholder="Confirm Password"
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-gray-50/50 text-gray-900"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
                       value={signUpData.confirmPassword}
                       onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
                     />
@@ -301,7 +320,7 @@ export default function Login() {
             )}
 
             {/* Divider */}
-            <div className="relative my-5">
+            <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200"></div>
               </div>
@@ -334,7 +353,6 @@ export default function Login() {
                 )}
               </button>
             </div>
-
           </div>
         </div>
       </div>
