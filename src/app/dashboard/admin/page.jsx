@@ -1251,10 +1251,38 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Detailed Attendance Table - Responsive */}
+                               {/* Detailed Attendance Table - Responsive (Mobile Cards + Desktop Table) */}
                   <div className="px-4 sm:px-6 pb-6">
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">📅 Daily Attendance Details</h3>
-                    <div className="overflow-x-auto">
+                    
+                    {/* Mobile Card View for Attendance Details */}
+                    <div className="block md:hidden space-y-3">
+                      {attendanceData.records.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl">No attendance records for this month</div>
+                      ) : (
+                        attendanceData.records.map((record) => (
+                          <div key={record._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                            <div className="flex justify-between items-start mb-3">
+                              <span className="text-sm font-medium text-gray-500">Date</span>
+                              <span className="text-sm font-semibold text-gray-900">{new Date(record.date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-sm font-medium text-gray-500">Status</span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${record.status === 'Present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                {record.status === 'Present' ? '✅ Present' : '❌ Absent'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-500">Marked At</span>
+                              <span className="text-xs text-gray-600">{new Date(record.markedAt || record.createdAt || record.date).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Desktop Table View for Attendance Details */}
+                    <div className="hidden md:block overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead className="bg-gray-100">
                           <tr>
@@ -1275,8 +1303,7 @@ export default function AdminDashboard() {
                               <tr key={record._id} className="hover:bg-gray-50">
                                 <td className="px-3 sm:px-4 py-2 text-gray-900 text-xs sm:text-sm">{new Date(record.date).toLocaleDateString()}</td>
                                 <td className="px-3 sm:px-4 py-2">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${record.status === 'Present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                    }`}>
+                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${record.status === 'Present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                     {record.status === 'Present' ? '✅ Present' : '❌ Absent'}
                                   </span>
                                 </td>
@@ -1291,10 +1318,52 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Detailed Leaves Table - Responsive */}
+                  {/* Detailed Leaves Table - Responsive (Mobile Cards + Desktop Table) */}
                   <div className="px-4 sm:px-6 pb-6">
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">📝 Leave Details</h3>
-                    <div className="overflow-x-auto">
+                    
+                    {/* Mobile Card View for Leave Details */}
+                    <div className="block md:hidden space-y-3">
+                      {leavesData.records.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl">No leave requests for this month</div>
+                      ) : (
+                        leavesData.records.map((leave) => (
+                          <div key={leave._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                            <div className="flex justify-between items-start mb-3">
+                              <span className="text-sm font-medium text-gray-500">Type</span>
+                              <span className="text-sm font-semibold text-gray-900">{leave.leaveType || leave.type}</span>
+                            </div>
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-sm font-medium text-gray-500">Duration</span>
+                              <span className="text-xs text-gray-700">
+                                {new Date(leave.startDate).toLocaleDateString()} → {new Date(leave.endDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-sm font-medium text-gray-500">Days</span>
+                              <span className="font-semibold text-gray-900">{leave.totalDays}</span>
+                            </div>
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-sm font-medium text-gray-500">Status</span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                leave.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                                leave.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {leave.status}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-500">Reason</span>
+                              <span className="text-xs text-gray-600 max-w-[200px] text-right">{leave.reason || '-'}</span>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Desktop Table View for Leave Details */}
+                    <div className="hidden md:block overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead className="bg-gray-100">
                           <tr>
@@ -1321,10 +1390,11 @@ export default function AdminDashboard() {
                                 <td className="px-3 sm:px-4 py-2 text-gray-900 text-xs sm:text-sm">{new Date(leave.endDate).toLocaleDateString()}</td>
                                 <td className="px-3 sm:px-4 py-2 font-semibold text-gray-900 text-xs sm:text-sm">{leave.totalDays}</td>
                                 <td className="px-3 sm:px-4 py-2">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${leave.status === 'Approved' ? 'bg-green-100 text-green-700' :
-                                      leave.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                        'bg-yellow-100 text-yellow-700'
-                                    }`}>
+                                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                    leave.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                                    leave.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                    'bg-yellow-100 text-yellow-700'
+                                  }`}>
                                     {leave.status}
                                   </span>
                                 </td>
