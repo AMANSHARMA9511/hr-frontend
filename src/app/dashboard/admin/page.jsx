@@ -289,59 +289,61 @@ export default function AdminDashboard() {
     totalAttendance: attendance.length
   };
 
-  // Pagination Component
-  const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-    if (totalPages <= 1) return null;
-    
-    return (
-      <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-3 py-1 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-        >
-          Previous
-        </button>
-        <div className="flex gap-1">
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            let pageNum;
-            if (totalPages <= 5) {
-              pageNum = i + 1;
-            } else if (currentPage <= 3) {
-              pageNum = i + 1;
-            } else if (currentPage >= totalPages - 2) {
-              pageNum = totalPages - 4 + i;
-            } else {
-              pageNum = currentPage - 2 + i;
-            }
-            
-            if (pageNum > totalPages || pageNum < 1) return null;
-            
-            return (
-              <button
-                key={pageNum}
-                onClick={() => onPageChange(pageNum)}
-                className={`w-8 h-8 rounded-lg text-sm transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-blue-600 text-white'
-                    : 'border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {pageNum}
-              </button>
-            );
-          })}
-        </div>
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-        >
-          Next
-        </button>
+// Update the Pagination component (around line 200-240) with these styles:
+
+// Pagination Component
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  if (totalPages <= 1) return null;
+  
+  return (
+    <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+      >
+        Previous
+      </button>
+      <div className="flex gap-1">
+        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+          let pageNum;
+          if (totalPages <= 5) {
+            pageNum = i + 1;
+          } else if (currentPage <= 3) {
+            pageNum = i + 1;
+          } else if (currentPage >= totalPages - 2) {
+            pageNum = totalPages - 4 + i;
+          } else {
+            pageNum = currentPage - 2 + i;
+          }
+          
+          if (pageNum > totalPages || pageNum < 1) return null;
+          
+          return (
+            <button
+              key={pageNum}
+              onClick={() => onPageChange(pageNum)}
+              className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                currentPage === pageNum
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+              }`}
+            >
+              {pageNum}
+            </button>
+          );
+        })}
       </div>
-    );
-  };
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+      >
+        Next
+      </button>
+    </div>
+  );
+};
 
   if (loading) {
     return (
