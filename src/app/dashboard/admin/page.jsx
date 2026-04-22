@@ -518,7 +518,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Leave Requests Tab */}
+          {/* Leave Requests Tab - Mobile Responsive Cards */}
           {selectedTab === 'leaves' && (
             <div className="p-4 sm:p-6">
               <div className="flex flex-wrap gap-2 mb-4">
@@ -541,7 +541,72 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Mobile Card View for Leaves */}
+              <div className="block lg:hidden space-y-4">
+                {filteredLeaves.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">No leave requests found</div>
+                ) : (
+                  filteredLeaves.map((leave) => (
+                    <div key={leave._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-blue-700">
+                              {getDisplayName(leave.userId).charAt(0)}
+                            </span>
+                          </div>
+                          <span className="font-semibold text-gray-900">{getDisplayName(leave.userId)}</span>
+                        </div>
+                        <span className={`px-2 py-1 text-xs rounded-full border ${getStatusBadgeClass(leave.status)}`}>
+                          {leave.status}
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Type:</span>
+                          <span className="font-medium text-gray-900">{leave.leaveType || leave.type}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Duration:</span>
+                          <span className="text-gray-900">{new Date(leave.startDate).toLocaleDateString()} → {new Date(leave.endDate).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Days:</span>
+                          <span className="font-semibold text-gray-900">{leave.totalDays}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Reason:</span>
+                          <span className="text-gray-900 truncate max-w-[180px]">{leave.reason || '-'}</span>
+                        </div>
+                      </div>
+                      {leave.status === 'Pending' && (
+                        <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                          <button
+                            onClick={() => handleLeaveAction(leave._id, 'Approved')}
+                            className="flex-1 px-3 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-all"
+                          >
+                            ✓ Approve
+                          </button>
+                          <button
+                            onClick={() => handleLeaveAction(leave._id, 'Rejected')}
+                            className="flex-1 px-3 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-all"
+                          >
+                            ✗ Reject
+                          </button>
+                        </div>
+                      )}
+                      {leave.status !== 'Pending' && (
+                        <div className="mt-3 pt-2 text-center text-xs text-gray-500">
+                          {leave.status === 'Approved' ? '✓ Approved' : '✗ Rejected'}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Desktop Table View for Leaves */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full min-w-[760px]">
                   <thead>
                     <tr className="bg-gray-100">
@@ -620,10 +685,57 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Employees Tab with View Button */}
+          {/* Employees Tab - Mobile Responsive Cards */}
           {selectedTab === 'employees' && (
             <div className="p-4 sm:p-6">
-              <div className="overflow-x-auto">
+              {/* Mobile Card View for Employees */}
+              <div className="block lg:hidden space-y-4">
+                {filteredEmployees.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">No employees found</div>
+                ) : (
+                  filteredEmployees.map((employee) => (
+                    <div key={employee._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold">
+                          {getDisplayName(employee).charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">{getDisplayName(employee)}</h3>
+                          <p className="text-sm text-gray-500 truncate">{employee.email}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm mb-4">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Joining Date:</span>
+                          <span className="text-gray-900">{new Date(employee.joiningDate).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Leave Balance:</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${employee.leaveBalance > 10 ? 'bg-green-100 text-green-800' :
+                              employee.leaveBalance > 5 ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                            }`}>
+                            {employee.leaveBalance} days
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleViewEmployee(employee)}
+                        className="w-full px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        View Details
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Desktop Table View for Employees */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full min-w-[760px]">
                   <thead>
                     <tr className="bg-gray-100">
@@ -656,8 +768,8 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4 text-gray-900">{new Date(employee.joiningDate).toLocaleDateString()}</td>
                           <td className="px-6 py-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${employee.leaveBalance > 10 ? 'bg-green-100 text-green-800' :
-                              employee.leaveBalance > 5 ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
+                                employee.leaveBalance > 5 ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
                               }`}>
                               {employee.leaveBalance} days
                             </span>
@@ -683,10 +795,51 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Attendance Tab */}
+          {/* Attendance Tab - Mobile Responsive Cards */}
           {selectedTab === 'attendance' && (
             <div className="p-4 sm:p-6">
-              <div className="overflow-x-auto">
+              {/* Mobile Card View for Attendance */}
+              <div className="block lg:hidden space-y-4">
+                {attendance.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">No attendance records found</div>
+                ) : (
+                  attendance.slice(0, 50).map((record) => (
+                    <div key={record._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-gray-700">
+                              {getDisplayName(record.userId).charAt(0)}
+                            </span>
+                          </div>
+                          <span className="font-medium text-gray-900">{getDisplayName(record.userId)}</span>
+                        </div>
+                        <span className={`px-3 py-1 text-sm rounded-full font-semibold ${record.status === 'Present'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                          }`}>
+                          {record.status === 'Present' ? '✅ Present' : '❌ Absent'}
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Date:</span>
+                          <span className="text-gray-900">{new Date(record.date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Marked At:</span>
+                          <span className="text-gray-600 text-xs">
+                            {new Date(record.markedAt || record.createdAt || record.date).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Desktop Table View for Attendance */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full min-w-[720px]">
                   <thead>
                     <tr className="bg-gray-100">
@@ -722,8 +875,8 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4">
                             <span className={`px-3 py-1 text-sm rounded-full font-semibold ${record.status === 'Present'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
                               }`}>
                               {record.status === 'Present' ? '✅ Present' : '❌ Absent'}
                             </span>
@@ -739,21 +892,21 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Employee Details Modal with Salary Calculation */}
+      {/* Employee Details Modal with Salary Calculation - Made Responsive */}
       {showEmployeeModal && selectedEmployee && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 sm:p-6 rounded-t-2xl">
               <div className="flex justify-between items-start">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl sm:text-3xl font-bold">
                     {getDisplayName(selectedEmployee).charAt(0)}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">{getDisplayName(selectedEmployee)}</h2>
-                    <p className="text-blue-100">{selectedEmployee.email}</p>
-                    <p className="text-sm text-blue-100 mt-1">
+                    <h2 className="text-xl sm:text-2xl font-bold">{getDisplayName(selectedEmployee)}</h2>
+                    <p className="text-blue-100 text-xs sm:text-sm break-all">{selectedEmployee.email}</p>
+                    <p className="text-xs text-blue-100 mt-1">
                       Joined: {new Date(selectedEmployee.joiningDate).toLocaleDateString()}
                     </p>
                   </div>
@@ -762,7 +915,7 @@ export default function AdminDashboard() {
                   onClick={() => setShowEmployeeModal(false)}
                   className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
                 >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -770,13 +923,13 @@ export default function AdminDashboard() {
             </div>
 
             {/* Month/Year Selector */}
-            <div className="p-6 border-b bg-gray-50">
-              <div className="flex flex-wrap gap-4 items-center justify-between">
-                <div className="flex gap-4">
+            <div className="p-4 sm:p-6 border-b bg-gray-50">
+              <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+                <div className="flex gap-3">
                   <select
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
                   >
                     {Array.from({ length: 12 }, (_, i) => (
                       <option key={i} value={i}>
@@ -787,7 +940,7 @@ export default function AdminDashboard() {
                   <select
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 text-sm"
                   >
                     {Array.from({ length: 5 }, (_, i) => {
                       const year = new Date().getFullYear() - 2 + i;
@@ -797,9 +950,9 @@ export default function AdminDashboard() {
                 </div>
                 <button
                   onClick={exportToCSV}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2 text-sm"
                 >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                   </svg>
                   Export CSV
@@ -818,62 +971,62 @@ export default function AdminDashboard() {
 
               return (
                 <>
-                  {/* Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200">
+                  {/* Summary Cards - Responsive Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-4 sm:p-6">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-green-700 font-medium">Total Present</p>
-                          <p className="text-3xl font-bold text-green-800">{attendanceData.present}</p>
+                          <p className="text-xs text-green-700 font-medium">Total Present</p>
+                          <p className="text-2xl font-bold text-green-800">{attendanceData.present}</p>
                           <p className="text-xs text-green-600 mt-1">out of {salaryData.workingDaysInMonth} days</p>
                         </div>
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                          <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                          <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-5 border border-red-200">
+                    <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-4 border border-red-200">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-red-700 font-medium">Total Absent</p>
-                          <p className="text-3xl font-bold text-red-800">{attendanceData.absent}</p>
+                          <p className="text-xs text-red-700 font-medium">Total Absent</p>
+                          <p className="text-2xl font-bold text-red-800">{attendanceData.absent}</p>
                           <p className="text-xs text-red-600 mt-1">without approved leave</p>
                         </div>
-                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                          <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                          <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-purple-700 font-medium">Leave Days Taken</p>
-                          <p className="text-3xl font-bold text-purple-800">{leavesData.totalDays}</p>
+                          <p className="text-xs text-purple-700 font-medium">Leave Days Taken</p>
+                          <p className="text-2xl font-bold text-purple-800">{leavesData.totalDays}</p>
                           <p className="text-xs text-purple-600 mt-1">approved leaves</p>
                         </div>
-                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                          <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                          <svg className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-blue-700 font-medium">Attendance %</p>
-                          <p className="text-3xl font-bold text-blue-800">{attendancePercentage}%</p>
+                          <p className="text-xs text-blue-700 font-medium">Attendance %</p>
+                          <p className="text-2xl font-bold text-blue-800">{attendancePercentage}%</p>
                           <p className="text-xs text-blue-600 mt-1">overall attendance</p>
                         </div>
-                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                          <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                           </svg>
                         </div>
@@ -881,45 +1034,45 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Salary Calculation Section */}
-                  <div className="px-6 pb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">💰 Salary Calculation for {new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long' })} {selectedYear}</h3>
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-3">
+                  {/* Salary Calculation Section - Responsive */}
+                  <div className="px-4 sm:px-6 pb-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">💰 Salary Calculation for {new Date(selectedYear, selectedMonth).toLocaleString('default', { month: 'long' })} {selectedYear}</h3>
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 sm:p-6 border border-gray-200">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="space-y-2 sm:space-y-3">
                           <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Working Days in Month:</span>
+                            <span className="text-sm text-gray-600">Working Days in Month:</span>
                             <span className="font-semibold text-gray-900">{salaryData.workingDaysInMonth} days</span>
                           </div>
                           <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Present Days:</span>
+                            <span className="text-sm text-gray-600">Present Days:</span>
                             <span className="font-semibold text-green-700">{salaryData.presentDays} days</span>
                           </div>
                           <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Absent Days:</span>
+                            <span className="text-sm text-gray-600">Absent Days:</span>
                             <span className="font-semibold text-red-700">{salaryData.absentDays} days</span>
                           </div>
                           <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Leave Days (Approved):</span>
+                            <span className="text-sm text-gray-600">Leave Days (Approved):</span>
                             <span className="font-semibold text-purple-700">{salaryData.leaveDays} days</span>
                           </div>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                           <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Monthly Salary (Base):</span>
+                            <span className="text-sm text-gray-600">Monthly Salary (Base):</span>
                             <span className="font-semibold text-gray-900">₹{salaryData.monthlySalary.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Daily Rate:</span>
+                            <span className="text-sm text-gray-600">Daily Rate:</span>
                             <span className="font-semibold text-gray-900">₹{salaryData.dailyRate.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between items-center pb-2 border-b border-gray-200 bg-green-50 p-2 rounded-lg">
-                            <span className="text-green-800 font-medium">Calculated Salary (Daily Rate):</span>
-                            <span className="font-bold text-green-800 text-lg">₹{parseFloat(salaryData.salaryByDailyRate).toLocaleString()}</span>
+                            <span className="text-green-800 font-medium text-sm">Calculated Salary (Daily Rate):</span>
+                            <span className="font-bold text-green-800 text-base sm:text-lg">₹{parseFloat(salaryData.salaryByDailyRate).toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between items-center pb-2 border-b border-gray-200 bg-blue-50 p-2 rounded-lg">
-                            <span className="text-blue-800 font-medium">Calculated Salary (With Deduction):</span>
-                            <span className="font-bold text-blue-800 text-lg">₹{parseFloat(salaryData.salaryWithDeduction).toLocaleString()}</span>
+                            <span className="text-blue-800 font-medium text-sm">Calculated Salary (With Deduction):</span>
+                            <span className="font-bold text-blue-800 text-base sm:text-lg">₹{parseFloat(salaryData.salaryWithDeduction).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
@@ -933,35 +1086,35 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Leave Summary */}
-                  <div className="px-6 pb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">📋 Leave Summary</h3>
-                    <div className="grid grid-cols-3 gap-4 mb-8">
-                      <div className="bg-green-50 rounded-lg p-4 text-center border border-green-200">
-                        <p className="text-2xl font-bold text-green-700">{leavesData.approved}</p>
-                        <p className="text-sm text-gray-700">Approved Leaves</p>
+                  {/* Leave Summary - Responsive */}
+                  <div className="px-4 sm:px-6 pb-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">📋 Leave Summary</h3>
+                    <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
+                      <div className="bg-green-50 rounded-lg p-3 text-center border border-green-200">
+                        <p className="text-xl sm:text-2xl font-bold text-green-700">{leavesData.approved}</p>
+                        <p className="text-xs text-gray-700">Approved</p>
                       </div>
-                      <div className="bg-yellow-50 rounded-lg p-4 text-center border border-yellow-200">
-                        <p className="text-2xl font-bold text-yellow-700">{leavesData.pending}</p>
-                        <p className="text-sm text-gray-700">Pending Leaves</p>
+                      <div className="bg-yellow-50 rounded-lg p-3 text-center border border-yellow-200">
+                        <p className="text-xl sm:text-2xl font-bold text-yellow-700">{leavesData.pending}</p>
+                        <p className="text-xs text-gray-700">Pending</p>
                       </div>
-                      <div className="bg-red-50 rounded-lg p-4 text-center border border-red-200">
-                        <p className="text-2xl font-bold text-red-700">{leavesData.rejected}</p>
-                        <p className="text-sm text-gray-700">Rejected Leaves</p>
+                      <div className="bg-red-50 rounded-lg p-3 text-center border border-red-200">
+                        <p className="text-xl sm:text-2xl font-bold text-red-700">{leavesData.rejected}</p>
+                        <p className="text-xs text-gray-700">Rejected</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Detailed Attendance Table */}
-                  <div className="px-6 pb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">📅 Daily Attendance Details</h3>
+                  {/* Detailed Attendance Table - Responsive */}
+                  <div className="px-4 sm:px-6 pb-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">📅 Daily Attendance Details</h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead className="bg-gray-100">
                           <tr>
-                            <th className="px-4 py-2 text-left text-gray-700">Date</th>
-                            <th className="px-4 py-2 text-left text-gray-700">Status</th>
-                            <th className="px-4 py-2 text-left text-gray-700">Marked At</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">Date</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">Status</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">Marked At</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y">
@@ -974,14 +1127,14 @@ export default function AdminDashboard() {
                           ) : (
                             attendanceData.records.map((record) => (
                               <tr key={record._id} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 text-gray-900">{new Date(record.date).toLocaleDateString()}</td>
-                                <td className="px-4 py-2">
+                                <td className="px-3 sm:px-4 py-2 text-gray-900 text-xs sm:text-sm">{new Date(record.date).toLocaleDateString()}</td>
+                                <td className="px-3 sm:px-4 py-2">
                                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${record.status === 'Present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                     }`}>
                                     {record.status === 'Present' ? '✅ Present' : '❌ Absent'}
                                   </span>
                                 </td>
-                                <td className="px-4 py-2 text-gray-600 text-xs">
+                                <td className="px-3 sm:px-4 py-2 text-gray-600 text-xs">
                                   {new Date(record.markedAt || record.createdAt || record.date).toLocaleString()}
                                 </td>
                               </tr>
@@ -992,19 +1145,19 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Detailed Leaves Table */}
-                  <div className="px-6 pb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">📝 Leave Details</h3>
+                  {/* Detailed Leaves Table - Responsive */}
+                  <div className="px-4 sm:px-6 pb-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">📝 Leave Details</h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead className="bg-gray-100">
                           <tr>
-                            <th className="px-4 py-2 text-left text-gray-700">Type</th>
-                            <th className="px-4 py-2 text-left text-gray-700">Start Date</th>
-                            <th className="px-4 py-2 text-left text-gray-700">End Date</th>
-                            <th className="px-4 py-2 text-left text-gray-700">Days</th>
-                            <th className="px-4 py-2 text-left text-gray-700">Status</th>
-                            <th className="px-4 py-2 text-left text-gray-700">Reason</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">Type</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">Start Date</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">End Date</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">Days</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">Status</th>
+                            <th className="px-3 sm:px-4 py-2 text-left text-gray-700 text-xs sm:text-sm">Reason</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y">
@@ -1017,19 +1170,19 @@ export default function AdminDashboard() {
                           ) : (
                             leavesData.records.map((leave) => (
                               <tr key={leave._id} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 text-gray-900">{leave.leaveType || leave.type}</td>
-                                <td className="px-4 py-2 text-gray-900">{new Date(leave.startDate).toLocaleDateString()}</td>
-                                <td className="px-4 py-2 text-gray-900">{new Date(leave.endDate).toLocaleDateString()}</td>
-                                <td className="px-4 py-2 font-semibold text-gray-900">{leave.totalDays}</td>
-                                <td className="px-4 py-2">
+                                <td className="px-3 sm:px-4 py-2 text-gray-900 text-xs sm:text-sm">{leave.leaveType || leave.type}</td>
+                                <td className="px-3 sm:px-4 py-2 text-gray-900 text-xs sm:text-sm">{new Date(leave.startDate).toLocaleDateString()}</td>
+                                <td className="px-3 sm:px-4 py-2 text-gray-900 text-xs sm:text-sm">{new Date(leave.endDate).toLocaleDateString()}</td>
+                                <td className="px-3 sm:px-4 py-2 font-semibold text-gray-900 text-xs sm:text-sm">{leave.totalDays}</td>
+                                <td className="px-3 sm:px-4 py-2">
                                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${leave.status === 'Approved' ? 'bg-green-100 text-green-700' :
-                                    leave.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                      'bg-yellow-100 text-yellow-700'
+                                      leave.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                        'bg-yellow-100 text-yellow-700'
                                     }`}>
                                     {leave.status}
                                   </span>
                                 </td>
-                                <td className="px-4 py-2 text-gray-700">{leave.reason || '-'}</td>
+                                <td className="px-3 sm:px-4 py-2 text-gray-700 text-xs sm:text-sm">{leave.reason || '-'}</td>
                               </tr>
                             ))
                           )}
