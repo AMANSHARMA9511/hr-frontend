@@ -17,9 +17,6 @@ export default function Login() {
     confirmPassword: ''
   });
 
-  // Demo credentials
-  const demoCredentials = { email: 'admin@example.com', password: 'admin123' };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -96,13 +93,6 @@ export default function Login() {
     }
   };
 
-  const fillDemoCredentials = () => {
-    setFormData({
-      email: demoCredentials.email,
-      password: demoCredentials.password
-    });
-  };
-
   return (
     <div className="flex bg-white">
       {/* LEFT PANEL - Brand Section with Gradient */}
@@ -156,40 +146,6 @@ export default function Login() {
                 {isSignUp ? 'Join the HR ecosystem' : 'Login to continue'}
               </p>
             </div>
-
-            {/* Demo Credentials Box (only for login) */}
-            {!isSignUp && (
-              <div className="mb-6 bg-blue-50 rounded-xl p-4 border border-blue-100">
-                {/* Demo Admin Info */}
-                <div className="text-center mb-3">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="text-sm font-semibold text-blue-800">Demo Admin:</span>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-xs">
-                    <code className="text-blue-700 bg-blue-100 px-2 py-1 rounded-md font-mono">
-                      admin@example.com
-                    </code>
-                    <span className="text-gray-500 hidden sm:inline">/</span>
-                    <span className="text-gray-500 sm:hidden">/</span>
-                    <code className="text-blue-700 bg-blue-100 px-2 py-1 rounded-md font-mono">
-                      admin123
-                    </code>
-                  </div>
-                </div>
-
-                {/* Auto-fill Button */}
-                <button
-                  onClick={fillDemoCredentials}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-all duration-200 text-sm shadow-sm hover:shadow"
-                >
-                  🔑 Auto-fill Credentials
-                </button>
-              </div>
-            )}
 
             {!isSignUp ? (
               /* LOGIN FORM */
@@ -363,7 +319,7 @@ export default function Login() {
                   setIsSignUp(!isSignUp);
                   setLoading(false);
                 }}
-                className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 px-6 rounded-full transition-all duration-200"
+                className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 px-6 py-2 rounded-full transition-all duration-200"
               >
                 {isSignUp ? (
                   <>
@@ -378,8 +334,6 @@ export default function Login() {
                 )}
               </button>
             </div>
-
-            {/* Footer note */}
 
           </div>
         </div>
